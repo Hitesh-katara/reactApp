@@ -15,7 +15,7 @@ export default function App() {
       <Link href="/Onboarding" className="mt-4 rounded bg-primary text-white p-4">Go To Onboarding</Link>
       <Link href="/(auth)/sign-in" className="mt-4 rounded bg-primary text-white p-4">Go To Sign In</Link>
       <Link href="/(auth)/sign-up" className="mt-4 rounded bg-primary text-white p-4">Go To Sign Up</Link>
-      <Link href="/sbscription/spotify" className="mt-4 rounded bg-primary text-white p-4">Spotify Sbscription</Link>
+      <Link href="/subscription/spotify" className="mt-4 rounded bg-primary text-white p-4">Spotify Subscription</Link>
       <Link
            href={{
                   pathname :"/subscriptons/[id]",
