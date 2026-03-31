@@ -1,11 +1,11 @@
-import { colors } from '@/app/constants/theme';
+import { colors } from '@/constants/theme';
 import clsx from "clsx";
 import { Tabs } from "expo-router";
 import React from "react";
 import { Image, View } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { tabs } from "../constants/data";
-import { components } from "../constants/theme";
+import { tabs } from "../../constants/data";
+import { components } from "../../constants/theme";
 
 const tabBar = components.tabBar;
 
