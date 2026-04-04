@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import clsx from 'clsx';
 import { icons } from '@/constants/icons';
 import dayjs from 'dayjs';
-import {posthog} from "@/src/config/posthog";
+import { usePostHog } from 'posthog-react-native'; // ✅ Use hook
 
 interface CreateSubscriptionModalProps {
   visible: boolean;
@@ -23,17 +23,34 @@ const CATEGORY_COLORS: Record<Category, string> = {
   'Other': '#d4d4d4',
 };
 
+// Predefined enum for subscription names to anonymize raw input
+const SUBSCRIPTION_NAME_ENUM: Record<string, string> = {
+  Netflix: 'entertainment_streaming',
+  Spotify: 'entertainment_music',
+  Figma: 'design_tool',
+  GitHub: 'dev_tool',
+  ChatGPT: 'ai_tool',
+  Default: 'other_subscription',
+};
+
+// Price bands
+function getPriceBand(price: number): string {
+  if (price <= 10) return '0-10';
+  if (price <= 50) return '10-50';
+  return '50+';
+}
+
 const CreateSubscriptionModal = ({ visible, onClose, onSubmit }: CreateSubscriptionModalProps) => {
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [frequency, setFrequency] = useState<Frequency>('Monthly');
   const [category, setCategory] = useState<Category>('Other');
 
-  // Improved price validation
+  const posthog = usePostHog(); // ✅ PostHog client
+
   const isValidPrice = () => {
     const trimmedPrice = price.trim();
     if (!trimmedPrice) return false;
-    // Strict numeric pattern check
     if (!/^\s*[+-]?(\d+(\.\d+)?|\.\d+)\s*$/.test(trimmedPrice)) return false;
     const numValue = Number(trimmedPrice);
     return Number.isFinite(numValue) && numValue > 0;
@@ -53,7 +70,6 @@ const CreateSubscriptionModal = ({ visible, onClose, onSubmit }: CreateSubscript
       name: name.trim(),
       price: priceValue,
       currency: 'USD',
-      frequency,
       category,
       status: 'active',
       startDate: now.toISOString(),
@@ -65,12 +81,18 @@ const CreateSubscriptionModal = ({ visible, onClose, onSubmit }: CreateSubscript
 
     onSubmit(newSubscription);
 
-    posthog.capture('subscription_created', {
-      subscription_name: name.trim(),
-      subscription_price: priceValue,
-      subscription_frequency: frequency,
-      subscription_category: category,
-    })
+    // ✅ Anonymize data for PostHog
+    const subscriptionKey = SUBSCRIPTION_NAME_ENUM[name.trim()] || SUBSCRIPTION_NAME_ENUM.Default;
+    const priceBand = getPriceBand(priceValue);
+
+    if (posthog) {
+      posthog.capture('subscription_created', {
+        subscription_key: subscriptionKey, // anonymized enum
+        subscription_price_band: priceBand, // price bucket
+        subscription_frequency: frequency,
+        subscription_category: category,
+      });
+    }
 
     resetForm();
     onClose();
@@ -89,12 +111,7 @@ const CreateSubscriptionModal = ({ visible, onClose, onSubmit }: CreateSubscript
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={handleClose}
-    >
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={handleClose}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
@@ -115,51 +132,52 @@ const CreateSubscriptionModal = ({ visible, onClose, onSubmit }: CreateSubscript
               keyboardShouldPersistTaps="handled"
               contentContainerStyle={{ gap: 20, paddingBottom: 20 }}
             >
+              {/* Name Field */}
               <View className="auth-field">
                 <Text className="auth-label">Name</Text>
                 <TextInput
                   className="auth-input"
                   placeholder="Subscription name"
-                  placeholderTextColor="rgba(0, 0, 0, 0.4)"
+                  placeholderTextColor="rgba(0,0,0,0.4)"
                   value={name}
                   onChangeText={setName}
                 />
               </View>
 
+              {/* Price Field */}
               <View className="auth-field">
                 <Text className="auth-label">Price</Text>
                 <TextInput
                   className="auth-input"
                   placeholder="0.00"
-                  placeholderTextColor="rgba(0, 0, 0, 0.4)"
+                  placeholderTextColor="rgba(0,0,0,0.4)"
                   value={price}
                   onChangeText={setPrice}
                   keyboardType="decimal-pad"
                 />
               </View>
 
+              {/* Frequency Field */}
               <View className="auth-field">
                 <Text className="auth-label">Frequency</Text>
                 <View className="picker-row">
-                  <Pressable
-                    className={clsx('picker-option', frequency === 'Monthly' && 'picker-option-active')}
-                    onPress={() => setFrequency('Monthly')}
-                  >
-                    <Text className={clsx('picker-option-text', frequency === 'Monthly' && 'picker-option-text-active')}>
-                      Monthly
-                    </Text>
-                  </Pressable>
-                  <Pressable
-                    className={clsx('picker-option', frequency === 'Yearly' && 'picker-option-active')}
-                    onPress={() => setFrequency('Yearly')}
-                  >
-                    <Text className={clsx('picker-option-text', frequency === 'Yearly' && 'picker-option-text-active')}>
-                      Yearly
-                    </Text>
-                  </Pressable>
+                  {['Monthly', 'Yearly'].map((f) => (
+                    <Pressable
+                      key={f}
+                      className={clsx('picker-option', frequency === f && 'picker-option-active')}
+                      onPress={() => setFrequency(f as Frequency)}
+                    >
+                      <Text
+                        className={clsx('picker-option-text', frequency === f && 'picker-option-text-active')}
+                      >
+                        {f}
+                      </Text>
+                    </Pressable>
+                  ))}
                 </View>
               </View>
 
+              {/* Category Field */}
               <View className="auth-field">
                 <Text className="auth-label">Category</Text>
                 <View className="category-scroll">
