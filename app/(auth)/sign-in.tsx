@@ -90,7 +90,7 @@ export default function SignIn() {
         return (
             <SafeAreaView className="auth-safe-area">
                 <KeyboardAvoidingView
-                    behavior={Platform.OS === 'android' ? 'padding' : 'height'}
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                     className="auth-screen"
                 >
                     <ScrollView className="auth-scroll">
