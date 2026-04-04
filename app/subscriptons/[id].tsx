@@ -3,7 +3,7 @@ import React from 'react'
 import { Link, useLocalSearchParams } from 'expo-router'
 
 const SubscriptionDetails = () => {
-    const {id} = useLocalSearchParams<{ id:String}>();
+    const {id} = useLocalSearchParams<{ id:string}>();
     return (
         <View>
       <Text>Subscription Details : {id}</Text>
