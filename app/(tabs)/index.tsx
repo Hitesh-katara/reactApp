@@ -1,17 +1,17 @@
+import ListHeading from '@/components/ListHeading';
+import SubscriptionCard from '@/components/SubscriptionCard';
+import UpcomingSubscriptionCard from '@/components/UpcomingSubscriptionCard';
 import { HOME_BALANCE, HOME_SUBSCRIPTIONS, HOME_USER, UPCOMING_SUBSCRIPTIONS } from '@/constants/data';
-import { FlatList, Image, Text, View } from 'react-native';
 import { icons } from '@/constants/icons';
 import images from '@/constants/images';
 import '@/global.css';
-import dayjs from "dayjs";
-import { Link } from 'expo-router';
-import { styled } from 'nativewind';
 import { formatCurrency } from '@/lib/utils';
-import { SafeAreaView as RnSafeAreaView } from 'react-native-safe-area-context';
-import ListHeading from '@/components/ListHeading';
-import UpcomingSubscriptionCard from '@/components/UpcomingSubscriptionCard';
+import dayjs from "dayjs";
+import { styled } from 'nativewind';
+import { PostHogProvider } from 'posthog-react-native';
 import React, { useState } from 'react';
-import SubscriptionCard from '@/components/SubscriptionCard';
+import { FlatList, Image, Text, View } from 'react-native';
+import { SafeAreaView as RnSafeAreaView } from 'react-native-safe-area-context';
 
 const SafeAreaView = styled(RnSafeAreaView);
 
@@ -21,7 +21,13 @@ export default function App() {
   
 
   return (
-    <SafeAreaView className="flex-1 bg-background p-5">
+    <PostHogProvider
+            apiKey="phc_oZ6TbEy8hjHNQbrQjivCwuJGzWiCauvHU2QzrsSuLwLy"
+            options={{
+                host: "https://eu.i.posthog.com",
+            }}
+        >
+            <SafeAreaView className="flex-1 bg-background p-5">
 
           
           <FlatList 
@@ -81,5 +87,7 @@ export default function App() {
           />
 
     </SafeAreaView>
+        </PostHogProvider>
+    
   );
 }
